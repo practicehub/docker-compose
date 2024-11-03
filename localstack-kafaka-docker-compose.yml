@@ -1,0 +1,68 @@
+version: '3'
+services:
+  localstack:
+    image: localstack/localstack:latest
+    hostname: localstack
+    container_name: localstack
+    environment:
+      - SERVICES=s3,sqs,lambda,secretsmanager,kafka
+      - STACK_MODE=easy
+    volumes:
+      - /home/kean/docker/localstack/data:/mnt/data
+    ports:
+      - "4566:4566" # S3, SQS, Lambda, SecretsManager, Kafka (web UI)
+      - "8001:8001" # S3 (REST API)
+      - "9002:9002" # SQS (REST API)
+      - "8088:8080" # Lambda, SecretsManager, Kafka (Java REST API)
+    networks:
+      - kafka_network
+
+  zookeeper:
+    depends_on:
+      - localstack
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    container_name: zookeeper
+    environment:
+      KAFKACLIENTPROTONEW: 0.11
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - /home/kean/docker/localstack/kafka:/var/lib/zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka_network
+
+  kafka:
+    depends_on:
+      - localstack
+      - zookeeper
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    container_name: kafka
+    environment:
+      - KAFKAS=my-test-cluster
+      - KAFKAS_MY_TEST_CLUSTER_BROKERID1=1
+      - KAFKAS_MY_TEST_CLUSTER_BOOTSTRAPSERVERS=localhost:9092
+      - KAFKAS_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKAS_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    volumes:
+      - /home/kean/docker/localstack/kafka:/mnt/data
+    ports:
+      - "9092:9092"
+    networks:
+      - kafka_network
+
+  # kafka-broker-config:
+  #   image: localstack/kafka:latest
+  #   hostname: broker-config
+  #   volumes:
+  #     - /home/kean/docker/localstack/kafka-broker-config:/etc/kafka/server.properties
+  #   command: cat /etc/kafka/server.properties
+  #   networks:
+  #     - kafka_network
+
+networks:
+  kafka_network:
+    driver: bridge
