@@ -45,8 +45,9 @@ services:
       - KAFKAS=my-test-cluster
       - KAFKAS_MY_TEST_CLUSTER_BROKERID1=1
       - KAFKAS_MY_TEST_CLUSTER_BOOTSTRAPSERVERS=localhost:9092
-      - KAFKAS_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
       - KAFKAS_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper
     volumes:
       - ~/docker/localstack/kafka:/mnt/data
     ports:
