@@ -1,0 +1,52 @@
+services:
+  zookeeper:
+    container_name: zookeeper
+    image: docker.io/bitnami/zookeeper:latest
+    ports:
+      - '2181'
+    volumes:
+      - zookeeper_data:/bitnami
+    environment:
+      # - ZOO_SERVER_ID=1
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      # - ZOO_SERVERS=zookeeper:2888:3888
+    networks:
+      - kafka_network
+
+  kafka:
+    container_name: kafka
+    image: docker.io/bitnami/kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://10.5.0.1:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      # # KRaft settings
+      # - KAFKA_CFG_NODE_ID=0
+      # - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      # - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # # Listeners
+      # - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      # - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      # - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      # - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    networks:
+      - kafka_network
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+
+networks:
+  kafka_network:
+    driver: bridge
