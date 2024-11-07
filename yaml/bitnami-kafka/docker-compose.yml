@@ -1,9 +1,9 @@
 services:
   zookeeper:
     container_name: zookeeper
-    image: docker.io/bitnami/zookeeper:latest
+    image: docker.io/bitnami/zookeeper:3.8.1
     ports:
-      - '2181'
+      - "2181:2181"
     volumes:
       - zookeeper_data:/bitnami
     environment:
@@ -15,7 +15,7 @@ services:
 
   kafka:
     container_name: kafka
-    image: docker.io/bitnami/kafka:latest
+    image: docker.io/bitnami/kafka:3.5.2
     depends_on:
       - zookeeper
     ports:
@@ -24,8 +24,8 @@ services:
       - "kafka_data:/bitnami"
     environment:
       - KAFKA_BROKER_ID=1
-      - KAFKA_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://10.5.0.1:9092
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.31.201:9092 # host.docker.internal 此地址Linux环境不可用
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       # # KRaft settings
