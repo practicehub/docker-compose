@@ -1,0 +1,48 @@
+services:
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:latest
+    ports:
+      - '4566:4566'
+    volumes:
+      - localstack_data:/localstack
+    environment:
+      # - SERVICES=s3:4566
+      - HOSTNAME=localstack
+      - HOSTNAME_EXTERNAL=localstack
+      - DEFAULT_REGION=ap-northeast-1
+    networks:
+      - localstack_network
+
+  aws-cli:
+    container_name: aws-cli
+    image: amazon/aws-cli
+    depends_on:
+      - localstack
+    volumes:
+      - awscli_data:/aws
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=ap-northeast-1
+    # entrypoint: /bin/sh -c
+    # command: >
+    #   "
+    #     aws --endpoint-url=http://localstack:4566 s3api create-bucket --bucket my-bucket --region us-east-1
+    #     aws --endpoint-url=http://localstack:4566 s3 cp testData.csv s3://cbk-data-bucket//testData.csv
+    #     aws --endpoint-url=http://localstack:4566 s3 cp testDataOne.csv s3://cbk-data-bucket//testDataTwo.csv
+    #     aws --endpoint-url=http://localstack:4566 s3 cp testDataTwo.csv s3://cbk-data-bucket//testDataTwo.csv
+    #     aws --endpoint-url=http://localstack:4566 s3 cp testDataThree.csv s3://cbk-data-bucket//testDataThree.csv
+    #   "
+    networks:
+      - localstack_network
+
+volumes:
+  localstack_data:
+    driver: local
+  awscli_data:
+    driver: local
+
+networks:
+  localstack_network:
+    driver: bridge

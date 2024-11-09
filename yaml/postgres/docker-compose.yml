@@ -1,0 +1,26 @@
+services:
+  postgresql:
+    container_name: postgresql
+    image: postgres:14.7
+    volumes:
+      - 'pgdata:/postgresql'
+      #- '~/Workspace/kafka/yaml/postgres/script/'
+      - './scripts/postgres:/docker-entrypoint-initdb.d/'
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - TZ=Asia/Shanghai
+    networks:
+      - pgnetwork
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  pgnetwork:
+    driver: bridge
