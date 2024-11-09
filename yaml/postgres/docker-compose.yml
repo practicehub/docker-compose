@@ -3,7 +3,7 @@ services:
     container_name: postgres
     image: postgres:14.7
     volumes:
-      - './pgdata/data:/postgresql'
+      - './pgdata/data:/var/lib/postgresql/data'
       #- '~/Workspace/kafka/yaml/postgres/script/'
       - './scripts/postgres:/docker-entrypoint-initdb.d/'
 
