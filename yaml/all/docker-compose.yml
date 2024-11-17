@@ -1,0 +1,109 @@
+services:
+  postgresql:
+    container_name: postgres
+    image: postgres:14.7
+    volumes:
+      - '../postgres/pgdata/data:/var/lib/postgresql/data'
+      - '../postgres/scripts/postgres:/docker-entrypoint-initdb.d/'
+
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_DATABASE=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - TZ=Asia/Shanghai
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    networks:
+      - pgnetwork
+
+  redis:
+    container_name: redis
+    image: docker.io/bitnami/redis:7.4.1
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis_data:/bitnami/redis/data'
+    networks:
+      - redis_network
+
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:latest
+    ports:
+      - '4566:4566'
+    volumes:
+      - localstack_data:/localstack
+    environment:
+      # - SERVICES=s3:4566
+      - HOSTNAME=localstack
+      - HOSTNAME_EXTERNAL=localstack
+      - DEFAULT_REGION=ap-northeast-1
+    networks:
+      - localstack_network
+
+  zookeeper:
+    container_name: zookeeper
+    image: docker.io/bitnami/zookeeper:3.8.1
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/bitnami
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes            # 允许匿名访问
+      - ZOO_AUTH_ENABLED=no                  # 启用身份验证
+      # - ZOO_AUTH_TYPE=sasl                 # 使用 SASL 身份验证
+      # - ZOO_SASL_CLIENT=true               # 启用客户端 SASL
+      # - ZOO_SASL_SERVER=true               # 启用服务器 SASL
+      # - ZOO_SASL_CLIENT_USERNAME=sample    # 客户端用户名
+      # - ZOO_SASL_CLIENT_PASSWORD=kafka     # 客户端密码
+    networks:
+      - kafka_network
+
+  kafka:
+    container_name: kafka
+    image: docker.io/bitnami/kafka:3.5.2
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.31.200:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes       # 允许明文监听器（可选）
+      # - KAFKA_SECURITY_PROTOCOL=SASL_PLAINTEXT # 使用 SASL 安全协议
+      # - KAFKA_SASL_MECHANISM=PLAIN         # 使用 PLAIN SASL 机制
+      # - KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username=sample password=kafka; # JAAS 配置
+    networks:
+      - kafka_network
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  localstack_data:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  kafka_network:
+    driver: bridge
+  localstack_network:
+    driver: bridge
+  pgnetwork:
+    driver: bridge
+  redis_network:
+    driver: bridge
