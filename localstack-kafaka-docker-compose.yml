@@ -55,14 +55,7 @@ services:
     networks:
       - local_network
 
-  # kafka-broker-config:
-  #   image: localstack/kafka:latest
-  #   hostname: broker-config
-  #   volumes:
-  #     - ~/docker/localstack/kafka-broker-config:/etc/kafka/server.properties
-  #   command: cat /etc/kafka/server.properties
-  #   networks:
-  #     - local_network
+
 
 networks:
   local_network:
