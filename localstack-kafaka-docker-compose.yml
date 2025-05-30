@@ -55,7 +55,28 @@ services:
     networks:
       - local_network
 
-
+  postgres:
+    image: pgvector/pgvector:pg16  # 官方集成镜像
+    container_name: pgvector-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yoursecurepassword
+      POSTGRES_DB: vectordb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 可选：初始化时自动创建扩展
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - local_network
+volumes:
+  pgdata:
 
 networks:
   local_network:
