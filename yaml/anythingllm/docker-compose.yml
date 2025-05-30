@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  anythingllm:
+    image: mintplexlabs/anythingllm:latest
+    container_name: anythingllm
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:3001:3001"  # 绑定到所有网络接口，可通过WSL IP访问
+    volumes:
+#      - ./storage:/app/server/storage  # 持久化存储目录
+      - anythingllm_storage:/app/server/storage  # 使用命名卷
+    environment:
+      # 必需环境变量
+      - STORAGE_DIR=/app/server/storage
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=3001
+      
+      # 推荐初始配置
+      - DISABLE_AUTH=false  # 禁用认证（首次访问更方便）
+      - AUTO_GPT=true      # 启用AutoGPT功能
+      
+      # LLM API设置（根据您的实际API密钥配置）
+      # - OPENAI_API_KEY=your_api_key_here
+      # 或使用其他模型：
+      # - OPENROUTER_API_KEY=your_openrouter_key
+      # - ANTHROPIC_API_KEY=your_anthropic_key
+      
+      # 向量数据库设置（默认使用ChromaDB）
+      # - VECTOR_DB=chroma
+      
+      # 高级配置（按需启用）
+      # - EMBEDDING_ENGINE=openai
+      # - LLM_PROVIDER=openai
+      # - JWT_SECRET=your_secure_jwt_secret
+    networks:
+      - anythingllm-network
+
+# 卷定义
+volumes:
+  anythingllm_storage:  # Docker管理的持久化存储卷
+    name: anythingllm_storage  # 显式命名卷
+
+networks:
+  anythingllm-network:
+    driver: bridge
+
+# 可选资源限制（如果内存不足时启用）
+#deploy:
+#  resources:
+#    limits:
+#      memory: 4G\
