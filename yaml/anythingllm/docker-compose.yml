@@ -6,7 +6,7 @@ services:
     container_name: anythingllm
     restart: unless-stopped
     ports:
-      - "0.0.0.0:3001:3001"  # 绑定到所有网络接口，可通过WSL IP访问
+      - "0.0.0.0:8081:3001"  # 绑定到所有网络接口，可通过WSL IP访问
     volumes:
 #      - ./storage:/app/server/storage  # 持久化存储目录
       - anythingllm_storage:/app/server/storage  # 使用命名卷
@@ -33,17 +33,17 @@ services:
       # - EMBEDDING_ENGINE=openai
       # - LLM_PROVIDER=openai
       # - JWT_SECRET=your_secure_jwt_secret
-    networks:
-      - anythingllm-network
+    # networks:
+    #   - anythingllm-network
 
 # 卷定义
 volumes:
   anythingllm_storage:  # Docker管理的持久化存储卷
-    name: anythingllm_storage  # 显式命名卷
+    name: data  # 显式命名卷
 
-networks:
-  anythingllm-network:
-    driver: bridge
+# networks:
+#   anythingllm-network:
+#     driver: bridge
 
 # 可选资源限制（如果内存不足时启用）
 #deploy:
